@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String   @unique
+  password  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model GroceryItem {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String
+  name              String
+  status            GroceryItemStatus @default(RANOUT)
+  priority          Int?              @default(5)
+  quantity          Int?              @default(0)
+  lastStatusChanged DateTime?
+  createdAt         DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime          @updatedAt @db.Timestamptz(6)
+
+  @@index([userId, status], map: "idx_grocery_user_status")
+  @@index([priority, name], map: "idx_grocery_priority_name")
+}
+
+model StatusHistory {
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  groceryItemId String
+  status        GroceryItemStatus @default(RANOUT)
+  changedAt     DateTime          @default(now())
+}
+
+enum GroceryItemStatus {
+  RANOUT
+  HAVE
+}
