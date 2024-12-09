@@ -3,7 +3,7 @@ RUN apk add g++ make py3-pip
 WORKDIR /app
 RUN npm install -g npm@10.8.2
 COPY ["package.json", "package-lock.json","./"]
-RUN npm install 
+RUN npm install
 RUN npm i -g @nrwl/cli vite pm2@latest
 COPY ["nx.json", "./"]
 COPY . .
