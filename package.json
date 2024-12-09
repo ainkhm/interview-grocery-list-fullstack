@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "backend:dev": "nx serve backend",
-    "backend:prod": "pm2 start dist/apps/backend/main.js -- --port 3001"
+    "backend:prod": "pm2 start dist/apps/backend/main.js -- --port 3000"
   },
   "prisma": {
     "seed": "node prisma/seed.ts"
