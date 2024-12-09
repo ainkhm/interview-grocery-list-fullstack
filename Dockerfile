@@ -10,5 +10,5 @@ COPY . .
 
 RUN npx prisma generate
 RUN npx nx run backend:build:production
-EXPOSE 3001
+EXPOSE 3000
 CMD ["npm","run","backend:prod"]
