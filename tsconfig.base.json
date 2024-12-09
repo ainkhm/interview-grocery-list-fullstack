@@ -16,9 +16,12 @@
     "strictPropertyInitialization": false,
     "baseUrl": ".",
     "paths": {
-      "@grocery-app/api-model": ["libs/api-models/src/index.ts"],
       "@grocery-app/grocery": ["libs/grocery/src/index.ts"],
-      "@grocery-app/middleware": ["libs/middleware/src/index.ts"]
+      "@grocery-app/user": ["libs/user/src/index.ts"],
+      "@grocery-app/auth": ["libs/auth/src/index.ts"],
+      "@grocery-app/interfaces": ["libs/interfaces/src/index.ts"],
+      "@grocery-app/prisma": ["libs/prisma/src/index.ts"],
+      "@grocery-app/configs": ["libs/configs/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

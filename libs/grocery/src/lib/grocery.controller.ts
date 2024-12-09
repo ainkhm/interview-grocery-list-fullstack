@@ -1,121 +1,213 @@
 import {
-  Body,
   Controller,
-  Delete,
+  UseGuards,
+  UseInterceptors,
+  Post,
+  Body,
   Get,
-  HttpStatus,
   NotFoundException,
   Param,
+  Delete,
   Patch,
-  Post,
-  Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiParam } from '@nestjs/swagger';
+
 import { GroceryService } from './grocery.service';
-import {
-  ApiBody,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { TransformGroceryInterceptor } from './interceptors';
+import { UpdateGroceryDto, CreateGroceryDto, FilterGroceryDto } from './dto';
+import { JwtAuthGuard } from '@grocery-app/auth';
+import { IGroceryView } from '@grocery-app/interfaces';
 
-import {
-  GroceryItemIdDto,
-  UpdateGroceryDto,
-  CreateGroceryDto,
-  FilterGroceryDto,
-} from '@grocery-app/api-model';
-
-@ApiTags('Grocery')
 @Controller({
   version: '1',
   path: 'grocery',
 })
 export class GroceryController {
   constructor(private groceryService: GroceryService) {}
- 
-  @ApiOperation({ description: 'Fetch all available grocery items.' })
-  @ApiResponse({
-    description: `All products with a quantity greater than 0`,
-    status: HttpStatus.OK,
-    type: FilterGroceryDto,
-  })
-  @Post('filter')
-  public async filterGroceries(@Body() filter: FilterGroceryDto) {
-    const data = await this.groceryService.filterGroceries(filter);
 
-    return {
-      data,
-    };
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        userId: {
+          type: 'string',
+          example: '8413fd2e-d4d1-4cdb-8dd5-650d23ac770c',
+          description: 'The ID of the user associated with the grocery item.',
+        },
+        status: {
+          type: 'string',
+          example: 'RANOUT',
+          description: 'The status of the grocery item (e.g., RANOUT, HAVE).',
+        },
+        quantity: {
+          type: 'number',
+          example: 2,
+          description: 'The quantity of the grocery item.',
+        },
+        priority: {
+          type: 'number',
+          example: 1,
+          description: 'The priority of the grocery item.',
+        },
+        name: {
+          type: 'string',
+          example: 'Milk',
+          description:
+            'The name of the grocery item. Supports partial matching.',
+        },
+      },
+      required: [],
+    },
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @UseInterceptors(TransformGroceryInterceptor)
+  @Post('filter')
+  public async filterGroceries(
+    @Body() filter: FilterGroceryDto,
+  ): Promise<IGroceryView[]> {
+    const data = await this.groceryService.filterGrocery(filter);
+
+    return data;
   }
 
-  @ApiOperation({ description: 'Get a grocery item.' })
   @ApiParam({ name: 'id', type: String })
-  @Get(':id')
-  public async getGroceryById(@Param('id') id: string) {
+  @Get('/:id')
+  public async getGroceryById(@Param('id') id: string): Promise<IGroceryView> {
     const result = await this.groceryService.getGroceryById(id);
-    if (result === null) {
+    if (!result) {
       throw new NotFoundException(`grocery item ${id} not found`);
     }
     return result;
   }
 
-  @ApiOperation({ description: 'Create grocery item' })
-  @ApiResponse({
-    description: `Create grocery item`,
-    status: HttpStatus.OK,
-    type: CreateGroceryDto,
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'The name of the grocery item',
+          example: 'Milk',
+        },
+        status: {
+          type: 'string',
+          description: 'The status of the grocery item',
+          enum: ['RANOUT', 'HAVE'],
+          example: 'RANOUT',
+        },
+        role: {
+          type: 'string',
+          description: 'The role associated with the item',
+          example: 'User',
+        },
+        userId: {
+          type: 'string',
+          description: 'The ID of the user',
+          format: 'uuid',
+          example: '8413fd2e-d4d1-4cdb-8dd5-650d23ac770c',
+        },
+        quantity: {
+          type: 'number',
+          description: 'The quantity of the grocery item',
+          example: 2,
+          minimum: 0,
+        },
+        priority: {
+          type: 'number',
+          description: 'The priority of the grocery item',
+          example: 1,
+          minimum: 1,
+          maximum: 5,
+        },
+      },
+      required: ['name', 'status', 'role', 'userId'],
+    },
   })
-  @ApiBody({ type: CreateGroceryDto })
-  @Post()
-  public async createGrocery(@Body() createGroceryDto: CreateGroceryDto) {
-    return this.groceryService.createGrocery(createGroceryDto);
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(TransformGroceryInterceptor)
+  @Post('create')
+  public async createGrocery(
+    @Body() createGroceryDto: CreateGroceryDto,
+  ): Promise<IGroceryView> {
+    const result = this.groceryService.createGrocery(createGroceryDto);
+    return result;
   }
 
-  @ApiOperation({ description: 'Update grocery item by UUID' })
-  @ApiResponse({
-    description: 'Successfully updated grocery item.',
-    status: HttpStatus.OK,
-    type: UpdateGroceryDto,
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'The name of the grocery item',
+          example: 'Milk',
+        },
+        status: {
+          type: 'string',
+          description: 'The status of the grocery item',
+          enum: ['RANOUT', 'HAVE'],
+          example: 'RANOUT',
+        },
+        role: {
+          type: 'string',
+          description: 'The role associated with the item',
+          example: 'User',
+        },
+        userId: {
+          type: 'string',
+          description: 'The ID of the user',
+          format: 'uuid',
+          example: '8413fd2e-d4d1-4cdb-8dd5-650d23ac770c',
+        },
+        quantity: {
+          type: 'number',
+          description: 'The quantity of the grocery item',
+          example: 2,
+          minimum: 0,
+        },
+        priority: {
+          type: 'number',
+          description: 'The priority of the grocery item',
+          example: 1,
+          minimum: 1,
+          maximum: 5,
+        },
+      },
+      required: ['name', 'status', 'role', 'userId'],
+    },
   })
-  @ApiResponse({
-    description: 'Grocery item not found.',
-    status: HttpStatus.NOT_FOUND,
-  })
-  @ApiParam({
-    name: 'id',
-    type: String,
-    description: 'Unique identifier for the grocery item',
-  })
-  @ApiBody({ type: UpdateGroceryDto })
-  @Patch(':id')
-  public async updateGrocery(
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(TransformGroceryInterceptor)
+  @Patch('/:id')
+  async updateGrocery(
     @Param('id') id: string,
     @Body() updateGroceryDto: UpdateGroceryDto,
-  ) {
+  ): Promise<IGroceryView> {
     const result = await this.groceryService.updateGrocery(
       id,
       updateGroceryDto,
     );
 
     if (!result) {
-      throw new NotFoundException(`Grocery item with id ${id} not found`);
+      throw new NotFoundException('Grocery not found');
     }
 
-    return {
-      message: 'Grocery item updated successfully',
-      data: result,
-    };
+    return result;
   }
 
-  @ApiOperation({ description: 'Delete grocery by item uuid' })
+  @UseGuards(JwtAuthGuard)
   @ApiParam({ name: 'id', type: String })
-  @Delete(':id')
-  public async deleteGrocery(@Param('id') id: string) {
-    const result = this.groceryService.deleteGrocery(id);
-    return {
-      message: 'Grocery deleted successfully',
-      data: result,
-    };
+  @Delete('/:id')
+  async deleteGrocery(@Param('id') id: string): Promise<string> {
+    const result = await this.groceryService.deleteGrocery(id);
+
+    if (!result) {
+      throw new NotFoundException('Grocery not found');
+    }
+
+    return 'Grocery deleted successfully';
   }
 }

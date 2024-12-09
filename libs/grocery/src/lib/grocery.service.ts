@@ -3,28 +3,22 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { Prisma, PrismaClient } from '@prisma/client';
-import {
-  CreateGroceryDto,
-  UpdateGroceryDto,
-  FilterGroceryDto,
-} from '@grocery-app/api-model';
-import { historyMiddleware } from './grocery.middleware';
+import { PrismaService, GroceryItemUpdateInput } from '@grocery-app/prisma';
 
-const prisma = new PrismaClient();
-
-prisma.$use(historyMiddleware());
+import { CreateGroceryDto, FilterGroceryDto, UpdateGroceryDto } from './dto';
+import { IGrocery, IGroceryView } from '@grocery-app/interfaces';
 
 @Injectable()
 export class GroceryService {
-  async filterGroceries(filter: FilterGroceryDto) {
-    const groceries = await prisma.groceryItem.findMany({
+  constructor(private readonly prisma: PrismaService) {}
+
+  async filterGrocery(filter: FilterGroceryDto): Promise<IGroceryView[]> {
+    const grocery = await this.prisma.groceryItem.findMany({
       where: {
         userId: filter.userId,
         status: filter.status,
-
+        quantity: filter.quantity,
         priority: filter.priority,
-
         name: filter.name
           ? { startsWith: filter.name, mode: 'insensitive' }
           : undefined,
@@ -32,52 +26,44 @@ export class GroceryService {
       orderBy: [{ priority: 'asc' }, { name: 'asc' }],
     });
 
-    return {
-      data: groceries,
-    };
+    return grocery;
   }
 
-  async getGroceryById(id: string) {
-    return prisma.groceryItem.findFirst({
-      where: {
-        id: id,
-      },
-    });
+  async getGroceryById(id: string): Promise<IGroceryView | null> {
+    const result = this.prisma.groceryItem.findUnique({ where: { id } });
+    return result;
   }
 
-  async createGrocery(createGroceryDto: CreateGroceryDto) {
-    if (!createGroceryDto.name.trim()) {
-      throw new BadRequestException('Invalid product name.');
-    }
+  async createGrocery(
+    createGroceryDto: CreateGroceryDto,
+  ): Promise<IGroceryView> {
     try {
-      await prisma.$transaction(async (tx) => {
-        return await tx.groceryItem.create({
-          data: createGroceryDto,
-        });
+      const createdGrocery = await this.prisma.groceryItem.create({
+        data: createGroceryDto,
       });
+      return createdGrocery;
     } catch (err) {
       throw new InternalServerErrorException(
-        `Someting went wrong to create this product. More ${err}`,
+        `Something went wrong while creating this item. Details: ${err}`,
       );
     }
   }
-
-  async deleteGrocery(id: string) {
-    return prisma.groceryItem.delete({
-      where: {
-        id: id,
-      },
-    });
-  }
-
   async updateGrocery(id: string, updateGroceryDto: UpdateGroceryDto) {
     const { ...updateData } = updateGroceryDto;
-    const updateInput: Prisma.GroceryItemUpdateInput = { ...updateData };
-    return prisma.groceryItem.update({
+
+    const updateInput: GroceryItemUpdateInput = { ...updateData };
+    return this.prisma.groceryItem.update({
       where: {
         id: id,
       },
       data: updateInput,
+    });
+  }
+  async deleteGrocery(id: string) {
+    return this.prisma.groceryItem.delete({
+      where: {
+        id: id,
+      },
     });
   }
 }

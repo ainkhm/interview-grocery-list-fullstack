@@ -1,11 +1,13 @@
-import { Module } from "@nestjs/common";
-import { AppService } from "./app.service";
-import { AppController } from "./app.controller";
-import { GroceryController, GroceryService } from "@grocery-app/grocery";
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { UserModule } from '@grocery-app/user';
+import { GroceryModule } from '@grocery-app/grocery';
+import { AuthModule } from '@grocery-app/auth';
 
 @Module({
-  imports: [],
-  controllers: [AppController, GroceryController],
-  providers: [AppService, GroceryService],
+  imports: [AuthModule, UserModule, GroceryModule],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
