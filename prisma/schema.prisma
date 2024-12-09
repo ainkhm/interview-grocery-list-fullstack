@@ -10,11 +10,11 @@ datasource db {
 model User {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email     String   @unique
-  name      String?  @default("") @db.VarChar(50)
   password  String
-  role      Role     @default(User)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  name      String?  @default("") @db.VarChar(50)
+  role      Role     @default(User)
 }
 
 model GroceryItem {

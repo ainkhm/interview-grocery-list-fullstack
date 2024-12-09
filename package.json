@@ -4,10 +4,10 @@
   "license": "MIT",
   "scripts": {
     "backend:dev": "nx serve backend",
-    "backend:prod": "pm2 start dist/apps/backend/main.js -- --port 3000"
+    "backend:prod": "pm2 start dist/apps/backend/main.js -- --port 3001"
   },
   "prisma": {
-    "seed": "node prisma/seed.cjs"
+    "seed": "node prisma/seed.ts"
   },
   "private": true,
   "dependencies": {
@@ -50,6 +50,7 @@
     "@types/passport-local": "^1.0.38",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
     "@typescript-eslint/parser": "^8.17.0",
+    "@vercel/remote-nx": "^2.0.0",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.1.0",
     "cypress": "^13.16.0",
