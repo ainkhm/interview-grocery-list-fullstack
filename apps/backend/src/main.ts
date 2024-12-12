@@ -31,9 +31,9 @@ async function bootstrap(): Promise<void> {
     },
   });
 
-  await app.listen(config.PORT);
+  await app.listen(config.SERVER_PORT);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${config.PORT}/${globalPrefix}`,
+    `🚀 Application is running on: http://localhost:${config.SERVER_PORT}/${globalPrefix}`,
   );
 }
 bootstrap();

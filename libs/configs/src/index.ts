@@ -3,17 +3,26 @@ import { validationOptions } from './validation.config';
 
 dotenv.config();
 
-const PORT: number = parseInt(process.env['PORT'] || '5000', 10);
+const SERVER_PORT: number = parseInt(process.env['SERVER_PORT'] || '5000', 10);
 
-let POSTGRES_URI: string;
+let DATABASE_URL: string;
 let JWT_SECRET: string;
 
 if (process.env['NODE_ENV'] === 'development') {
-  POSTGRES_URI = 'postgres://admin:password1@localhost:5432/goji_interview';
+  DATABASE_URL =
+    process.env['DATABASE_URL'] ||
+    'postgres://admin:password1@localhost:5432/goji_interview';
   JWT_SECRET = 'JWT SECRET';
 } else {
-  POSTGRES_URI = process.env['POSTGRES_URI'] || 'none';
+  DATABASE_URL = process.env['DATABASE_URL'] || 'none';
   JWT_SECRET = process.env['JWT_SECRET'] || 'JWT_SECRET';
 }
 
-export const config = { PORT, POSTGRES_URI, validationOptions, JWT_SECRET };
+console.log(SERVER_PORT, DATABASE_URL, validationOptions, JWT_SECRET);
+
+export const config = {
+  SERVER_PORT,
+  DATABASE_URL,
+  validationOptions,
+  JWT_SECRET,
+};
