@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
 
@@ -54,26 +55,27 @@ const groceryItems = [
 ];
 
 async function main() {
-  // Upsert user
+  const plainPassword = 'testpassword';
+  const hashedPassword = await bcrypt.hash(plainPassword, 12);
+
   const user = await prisma.user.upsert({
     where: { email: 'testuser@example.com' },
     update: {},
     create: {
       email: 'testuser@example.com',
-      password: 'testpassword',
+      password: hashedPassword,
     },
   });
 
-  // Add grocery items associated with the user
   await Promise.all(
     groceryItems.map((item) =>
       prisma.groceryItem.create({
         data: {
           ...item,
-          userId: user.id, // Associate with the created user
+          userId: user.id,
         },
-      })
-    )
+      }),
+    ),
   );
 
   console.log('Database has been seeded successfully!');

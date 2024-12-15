@@ -1,6 +1,6 @@
 import { Controller, Get, Post, UseGuards, Req } from '@nestjs/common';
 
-import { ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService, LocalAuthGuard, JwtAuthGuard } from '@grocery-app/auth';
 import { IUserView, Request } from '@grocery-app/interfaces';
 
@@ -8,10 +8,6 @@ import { IUserView, Request } from '@grocery-app/interfaces';
 export class AppController {
   constructor(private readonly authService: AuthService) {}
 
-  @ApiOperation({
-    summary: 'User Login',
-    description: 'Authenticate user and receive an access token.',
-  })
   @ApiBody({
     schema: {
       type: 'object',
