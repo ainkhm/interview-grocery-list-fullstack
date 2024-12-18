@@ -18,10 +18,33 @@ import { useProfile } from '../hooks/useAuth';
 import LoginForm from '../components/LoginForm';
 import UserForm from '../components/UserForm';
 import { createPortal } from 'react-dom';
+import { useFilterGrocery, FilterData } from '../hooks/useGrocery';
 
 const Header: React.FC = () => {
   const [loginFormToogle, setLoginFormToogle] = useState<boolean>(false);
   const [userFormToggle, setUserFormToggle] = useState<boolean>(false);
+  const { data } = useProfile();
+  const {
+    mutate: filterGrocery,
+    isPending,
+    data: groceryData,
+  } = useFilterGrocery();
+  const filterItems = async (params: FilterData) => {
+    return filterGrocery(params);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await filterGrocery({});
+      console.log(data);
+    };
+
+    fetchData();
+  }, [data]);
+
+  useEffect(() => {
+    console.log(groceryData);
+  }, [groceryData]);
 
   const handleLoginForm = useCallback(() => {
     setLoginFormToogle((prevState) => !prevState);
@@ -29,25 +52,22 @@ const Header: React.FC = () => {
   const handleUserForm = useCallback(() => {
     setUserFormToggle((prevState) => !prevState);
   }, []);
-  const { data } = useProfile();
 
-  useEffect(() => {
-    console.log('user', data);
-  }, [data]);
+  const handleStatusChange = ({
+    target: { value },
+  }: React.ChangeEvent<{ value: string }>) => {
+    filterItems({ name: value });
+  };
 
-  //   const handleStatusChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-  //     setStatus(event.target.value as string);
-  //   };
+  const handlePriorityChange = ({
+    target: { value },
+  }: React.ChangeEvent<{ value: number }>) => filterItems({ priority: value });
 
-  //   const handlePriorityChange = (
-  //     event: React.ChangeEvent<{ value: unknown }>,
-  //   ) => {
-  //     setPriority(event.target.value as string);
-  //   };
-
-  //   const handleNameChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-  //     setName(event.target.value as string);
-  //   };
+  const handleNameChange = ({
+    target: { value },
+  }: React.ChangeEvent<{ value: string }>) => {
+    filterItems({ name: value });
+  };
 
   //   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
   //     setSearch(event.target.value);
@@ -89,7 +109,7 @@ const Header: React.FC = () => {
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Select
                 value={status}
-                //   onChange={handleStatusChange}
+                onChange={handleStatusChange}
                 displayEmpty
                 sx={{ minWidth: 200 }}
                 size="small"
@@ -98,7 +118,6 @@ const Header: React.FC = () => {
                     style: { backgroundColor: 'white' },
                   },
                 }}
-                defaultValue=""
               >
                 <MenuItem value="" disabled>
                   Status

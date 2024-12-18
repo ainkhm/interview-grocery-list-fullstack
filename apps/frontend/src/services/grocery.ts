@@ -1,43 +1,33 @@
-import ky from 'ky';
+import { handleApiError } from '../utils/apiHandler';
 import { apiClient } from '../utils/apiClient';
 import { env } from '../constants/env';
 
-interface LoginResponse {
-  access_token: string;
+export interface GroceryResponse {
+  id: string;
+  name?: string;
+  status?: 'RANOUT' | 'HAVE';
+  priority?: number;
+  quantity?: number;
 }
-
-export const login = async (email: string, password: string) => {
+export const getFilterGrocery = async (
+  data: Partial<{
+    userId: string;
+    status: string;
+    quantity: number;
+    priority: number;
+    name: string;
+  }> = {},
+): Promise<GroceryResponse> => {
   try {
     const response = await apiClient
-      .post(`${env.API_URL}/auth/login`, {
-        json: { email, password },
+      .post(`${env.API_URL}/grocery/filter`, {
+        json: data,
       })
-      .json<LoginResponse>();
+      .json<GroceryResponse>();
 
     return response;
-  } catch (error) {
-    console.error('Login failed:', error);
-    throw new Error('Failed to login. Please try again later.');
+  } catch (error: any) {
+    handleApiError(error);
+    throw error;
   }
 };
-
-// export const getGroceryList = async (params: {
-//   priority?: number;
-//   status?: string;
-//   name?: string;
-// }) => {
-//   const searchParams = new URLSearchParams(params as Record<string, string>);
-//   const response = await ky
-//     .get(`${env.API_URL}/grocery`, { searchParams })
-//     .json<{ data: any[] }>();
-
-//   return response.data;
-// };
-
-// export const createGroceryItem = async (groceryItem: GroceryFormItem) => {
-//   const response = await ky
-//     .post(`${env.API_URL}/grocery`, { json: groceryItem })
-//     .json<{ data: GroceryItem }>();
-
-//   return response.data;
-// };

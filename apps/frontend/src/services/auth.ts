@@ -65,3 +65,16 @@ export const updateUser = async (
     throw error;
   }
 };
+
+export const getUser = async (id: string): Promise<UserResponse> => {
+  try {
+    const response = await apiClient
+      .get(`${env.API_URL}/users/${id}`)
+      .json<UserResponse>();
+
+    return response;
+  } catch (error: any) {
+    handleApiError(error);
+    throw error;
+  }
+};

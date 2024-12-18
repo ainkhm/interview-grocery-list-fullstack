@@ -16,7 +16,7 @@ export const Footer: FC = () => {
         maxWidth={'xl'}
       >
         <Typography color="white" variant="subtitle1">
-          {`${currentYear} | Made with ❤️ by Andrey Khmelovsky`}
+          {`${currentYear} | Made with 🤞 by Andrey Khmelovsky`}
         </Typography>
         <Box>
           <IconButton

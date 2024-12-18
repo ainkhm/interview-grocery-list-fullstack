@@ -1,25 +1,31 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { queryClient } from '../utils/queryClient';
+import { getFilterGrocery, GroceryResponse } from '../services/grocery';
 
-import { createGroceryItem, getGroceryList } from '../services/grocery'
-import { queryClient } from '../utils/queryClient'
-
-
-
-
-export const useGroceryList = (params?: { priority?: number; status?: string; perPage?: number }, enabled = true) => {
-  return useQuery({
-    queryKey: ['groceryList'],
-    queryFn: () => getGroceryList({ ...params }),
-    enabled,
-  })
+export interface FilterData extends Omit<GroceryResponse, 'id'> {
+  userId?: string;
 }
 
-export const useCreateGrocery = () => {
-  return useMutation({
-    mutationKey: ['createGrocery'],
-    mutationFn: (groceryItem: GroceryFormItem) => createGroceryItem(groceryItem),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groceryList'] })
+export const useFilterGrocery = () => {
+  const { mutate, isPending, isError, isSuccess, error, data } = useMutation({
+    mutationFn: async (filterData: FilterData = {}) => {
+      const response = await getFilterGrocery(filterData);
+      return response;
     },
-  })
-}
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groceryList'] });
+    },
+    onError: (error: any) => {
+      return error;
+    },
+  });
+
+  return {
+    mutate,
+    isPending,
+    isError,
+    isSuccess,
+    error,
+    data,
+  };
+};

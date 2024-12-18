@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { login, getProfile, updateUser } from '../services/auth';
+import { login, getProfile, updateUser, getUser } from '../services/auth';
 import { setToken, getToken } from '../utils/tokenManager';
 import { queryClient } from '../utils/queryClient';
 
@@ -64,8 +64,9 @@ export const useUpdateUser = () => {
       const response = await updateUser(data);
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    onSuccess: async (updatedUser) => {
+      const user = await getUser(updatedUser.id);
+      queryClient.setQueryData(['profile'], user);
     },
     onError: (error: any) => {
       return error;
